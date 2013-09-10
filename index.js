@@ -1,0 +1,94 @@
+"use strict";
+
+var assert = require("assert"),
+    util = require("util");
+
+var request = require("crequest");
+
+var TNT_URL_PREFIX = process.env.TNT_URL_PREFIX || "https://api.transitandtrails.org";
+
+var TnT = function(options) {
+  options = options || {};
+
+  options.key = options.key || process.env.TNT_API_KEY;
+
+  this.key = options.key;
+};
+
+TnT.prototype.toString = function() {
+  return "[TransitAndTrails]";
+};
+
+TnT.prototype.get = function(options, callback) {
+  assert.ok(this.key, "An API key is required.");
+
+  if (typeof options === "string") {
+    options = {
+      url: options
+    };
+  }
+
+  options.url = TNT_URL_PREFIX + options.url;
+
+  options.qs = options.qs || {};
+
+  // filter out undefined / null values
+  Object.keys(options.qs).forEach(function(x) {
+    if (options.qs[x] === undefined ||
+        options.qs[x] === null) {
+      delete options.qs[x];
+    }
+  });
+
+  options.qs.key = this.key;
+
+  return request.get(options, function(err, res, body) {
+    if (res.statusCode !== 200) {
+      return callback(body);
+    }
+
+    // reverse the order of body and res since clients shouldn't care about res
+    return callback(err, body, res);
+  });
+};
+
+TnT.prototype.getTrailhead = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get("/api/v1/trailheads/" + id, callback);
+};
+
+TnT.prototype.getTrailheadAttributes = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  var path = "/api/v1/trailhead_attributes";
+
+  if (id) {
+    path = util.format("/api/v1/trailheads/%d/attributes", id);
+  }
+
+  return this.get(path, callback);
+};
+
+TnT.prototype.getTrailheadPhotos = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/trailheads/%d/photos", id), callback);
+};
+
+TnT.prototype.getTrailheadMaps = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/trailheads/%d/maps", id), callback);
+};
+
+TnT.prototype.getTrailheads = function(options, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get({
+    url: "/api/v1/trailheads",
+    qs: options
+  }, callback);
+};
+
+module.exports = TnT;

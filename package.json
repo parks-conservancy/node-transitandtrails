@@ -1,0 +1,29 @@
+{
+  "name": "transitandtrails",
+  "version": "0.1.0",
+  "description": "Transit & Trails API Client",
+  "main": "index.js",
+  "author": "Seth Fitzsimmons <seth@mojodna.net>",
+  "homepage": "https://github.com/mojodna/node-transitandtrails",
+  "bugs": "https://github.com/mojodna/node-transitandtrails/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mojodna/node-transitandtrails.git"
+  },
+  "license": "MIT",
+  "jshintConfig": {
+    "node": true,
+    "globalstrict": true,
+    "curly": true,
+    "sub": true,
+    "indent": 2,
+    "newcap": true,
+    "white": false,
+    "undef": true,
+    "unused": true,
+    "maxlen": 100
+  },
+  "dependencies": {
+    "crequest": "~0.1.1"
+  }
+}
