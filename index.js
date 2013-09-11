@@ -207,4 +207,23 @@ TnT.prototype.getTrips = function(options, callback) {
   }, callback);
 };
 
+//
+// Users
+//
+
+TnT.prototype.getUser = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get("/api/v1/users/" + id, callback);
+};
+
+TnT.prototype.getUsers = function(options, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get({
+    url: "/api/v1/users",
+    qs: options
+  }, callback);
+};
+
 module.exports = TnT;
