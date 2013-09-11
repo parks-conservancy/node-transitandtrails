@@ -138,4 +138,73 @@ TnT.prototype.getTrailheads = function(options, callback) {
   }, callback);
 };
 
+//
+// Trips
+//
+
+TnT.prototype.getTrip = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get("/api/v1/trips/" + id, callback);
+};
+
+TnT.prototype.getTripAttributes = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  var path = "/api/v1/trip_attributes";
+
+  if (id) {
+    path = util.format("/api/v1/trips/%d/attributes", id);
+  }
+
+  return this.get(path, callback);
+};
+
+TnT.prototype.getTripPhotos = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/trips/%d/photos", id), callback);
+};
+
+TnT.prototype.getTripMaps = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/trips/%d/maps", id), callback);
+};
+
+TnT.prototype.getTripRoute = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/trips/%d/route", id), function(err, body, res) {
+    if (err) {
+      return callback(err, body, res);
+    }
+
+    var route;
+
+    try {
+      // route is stringified JSON (not JSON)
+      route = JSON.parse(body.route);
+    } catch (e) {
+      return callback(e);
+    }
+
+    // flip coords to (x,y) order
+    route = route.map(function(x) {
+      return [x[1], x[0]];
+    });
+
+    return callback(null, route, res);
+  });
+};
+
+TnT.prototype.getTrips = function(options, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get({
+    url: "/api/v1/trips",
+    qs: options
+  }, callback);
+};
+
 module.exports = TnT;
