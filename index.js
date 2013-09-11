@@ -53,6 +53,19 @@ TnT.prototype.get = function(options, callback) {
 };
 
 //
+// Attribute Categories
+//
+
+TnT.prototype.getAttributeCategories = function(options, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get({
+    url: "/api/v1/attribute_categories",
+    qs: options
+  }, callback);
+};
+
+//
 // Campgrounds
 //
 
