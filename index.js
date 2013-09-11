@@ -52,6 +52,53 @@ TnT.prototype.get = function(options, callback) {
   });
 };
 
+//
+// Campgrounds
+//
+
+TnT.prototype.getCampground = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get("/api/v1/campgrounds/" + id, callback);
+};
+
+TnT.prototype.getCampgroundAttributes = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  var path = "/api/v1/campground_attributes";
+
+  if (id) {
+    path = util.format("/api/v1/campgrounds/%d/attributes", id);
+  }
+
+  return this.get(path, callback);
+};
+
+TnT.prototype.getCampgroundMaps = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/campgrounds/%d/maps", id), callback);
+};
+
+TnT.prototype.getCampgroundPhotos = function(id, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get(util.format("/api/v1/campgrounds/%d/photos", id), callback);
+};
+
+TnT.prototype.getCampgrounds = function(options, callback) {
+  callback = Array.prototype.slice.call(arguments).pop();
+
+  return this.get({
+    url: "/api/v1/campgrounds",
+    qs: options
+  }, callback);
+};
+
+//
+// Trailheads
+//
+
 TnT.prototype.getTrailhead = function(id, callback) {
   callback = Array.prototype.slice.call(arguments).pop();
 
