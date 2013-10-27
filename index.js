@@ -3,7 +3,8 @@
 var assert = require("assert"),
     util = require("util");
 
-var request = require("crequest");
+var async = require("async"),
+    request = require("crequest");
 
 var TNT_URL_PREFIX = process.env.TNT_URL_PREFIX || "https://api.transitandtrails.org";
 
@@ -159,6 +160,42 @@ TnT.prototype.getTrip = function(id, callback) {
   callback = Array.prototype.slice.call(arguments).pop();
 
   return this.get("/api/v1/trips/" + id, callback);
+};
+
+TnT.prototype.getTripAsGeoJSON = function(id, callback) {
+  var self = this;
+
+  return async.parallel([
+    function(done) {
+      return self.getTrip(id, done);
+    },
+    function(done) {
+      return self.getTripRoute(id, done);
+    }
+  ], function(err, data) {
+    if (err) {
+      return callback(err);
+    }
+
+    var trip = data[0][0],
+        route = data[1][0];
+
+    var geoJSON = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: route
+          },
+          properties: trip
+        }
+      ]
+    };
+
+    return callback(null, geoJSON);
+  });
 };
 
 TnT.prototype.getTripAttributes = function(id, callback) {
