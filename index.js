@@ -180,22 +180,17 @@ TnT.prototype.getTripAsGeoJSON = function(id, callback) {
     var trip = data[0][0],
         route = data[1][0];
 
-    var geoJSON = {
-      type: "FeatureCollection",
-      features: [
-        {
-          id: trip.id,
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: route
-          },
-          properties: trip
-        }
-      ]
+    var feature = {
+      id: trip.id,
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: route
+      },
+      properties: trip
     };
 
-    return callback(null, geoJSON);
+    return callback(null, feature);
   });
 };
 
