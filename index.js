@@ -184,6 +184,7 @@ TnT.prototype.getTripAsGeoJSON = function(id, callback) {
       type: "FeatureCollection",
       features: [
         {
+          id: trip.id,
           type: "Feature",
           geometry: {
             type: "LineString",
