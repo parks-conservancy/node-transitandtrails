@@ -1,6 +1,6 @@
 {
   "name": "transitandtrails",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Transit & Trails API Client",
   "main": "index.js",
   "author": "Seth Fitzsimmons <seth@mojodna.net>",
