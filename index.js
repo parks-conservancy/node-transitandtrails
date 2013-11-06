@@ -114,9 +114,46 @@ TnT.prototype.getCampgrounds = function(options, callback) {
 //
 
 TnT.prototype.getTrailhead = function(id, callback) {
-  callback = Array.prototype.slice.call(arguments).pop();
-
   return this.get("/api/v1/trailheads/" + id, callback);
+};
+
+TnT.prototype.getTrailheadAsGeoJSON = function(id, callback) {
+  var self = this;
+
+  return async.parallel({
+    trailhead: function(done) {
+      return self.getTrailhead(id, done);
+    },
+    attributes: function(done) {
+      return self.getTrailheadAttributes(id, done);
+    }
+  }, function(err, data) {
+    if (err) {
+      return callback(err);
+    }
+
+    var trailhead = data.trailhead[0],
+        attributes = data.attributes[0];
+
+    trailhead.attributes = attributes.map(function(x) {
+      return x.name;
+    });
+
+    var feature = {
+      id: trailhead.id,
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [trailhead.longitude, trailhead.latitude]
+      },
+      properties: trailhead
+    };
+
+    delete feature.properties.latitude;
+    delete feature.properties.longitude;
+
+    return callback(null, feature);
+  });
 };
 
 TnT.prototype.getTrailheadAttributes = function(id, callback) {
