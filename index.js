@@ -194,28 +194,34 @@ TnT.prototype.getTrailheads = function(options, callback) {
 //
 
 TnT.prototype.getTrip = function(id, callback) {
-  callback = Array.prototype.slice.call(arguments).pop();
-
   return this.get("/api/v1/trips/" + id, callback);
 };
 
 TnT.prototype.getTripAsGeoJSON = function(id, callback) {
   var self = this;
 
-  return async.parallel([
-    function(done) {
+  return async.parallel({
+    trip: function(done) {
       return self.getTrip(id, done);
     },
-    function(done) {
+    route: function(done) {
       return self.getTripRoute(id, done);
+    },
+    attributes: function(done) {
+      return self.getTripAttributes(id, done);
     }
-  ], function(err, data) {
+  }, function(err, data) {
     if (err) {
       return callback(err);
     }
 
-    var trip = data[0][0],
-        route = data[1][0];
+    var trip = data.trip[0],
+        route = data.route[0],
+        attributes = data.attributes[0];
+
+    trip.attributes = attributes.map(function(x) {
+      return x.name;
+    });
 
     var feature = {
       id: trip.id,
