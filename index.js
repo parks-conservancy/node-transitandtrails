@@ -4,6 +4,7 @@ var assert = require("assert"),
     util = require("util");
 
 var async = require("async"),
+    lockingCache = require("locking-cache"),
     request = require("crequest");
 
 var TNT_URL_PREFIX = process.env.TNT_URL_PREFIX || "https://api.transitandtrails.org";
@@ -20,37 +21,48 @@ TnT.prototype.toString = function() {
   return "[TransitAndTrails]";
 };
 
-TnT.prototype.get = function(options, callback) {
-  assert.ok(this.key, "An API key is required.");
-
-  if (typeof options === "string") {
-    options = {
-      url: options
-    };
+var lockedGet = lockingCache({
+  max: 10 * 1024 * 1024, // 10 MB
+  length: function(n) {
+    return n.length;
   }
+});
 
-  options.url = TNT_URL_PREFIX + options.url;
+TnT.prototype.get = function(options, callback) {
+  return lockedGet(function(options, lock) {
+    assert.ok(this.key, "An API key is required.");
 
-  options.qs = options.qs || {};
-
-  // filter out undefined / null values
-  Object.keys(options.qs).forEach(function(x) {
-    if (options.qs[x] === undefined ||
-        options.qs[x] === null) {
-      delete options.qs[x];
-    }
-  });
-
-  options.qs.key = this.key;
-
-  return request.get(options, function(err, res, body) {
-    if (res.statusCode !== 200) {
-      return callback(body);
+    if (typeof options === "string") {
+      options = {
+        url: options
+      };
     }
 
-    // reverse the order of body and res since clients shouldn't care about res
-    return callback(err, body, res);
-  });
+    options.url = TNT_URL_PREFIX + options.url;
+
+    options.qs = options.qs || {};
+
+    // filter out undefined / null values
+    Object.keys(options.qs).forEach(function(x) {
+      if (options.qs[x] === undefined ||
+          options.qs[x] === null) {
+        delete options.qs[x];
+      }
+    });
+
+    options.qs.key = this.key;
+
+    return lock(options, function(unlock) {
+      return request.get(options, function(err, res, body) {
+        if (res.statusCode !== 200) {
+          return unlock(new Error(body));
+        }
+
+        // reverse the order of body and res since clients shouldn't care about res
+        return unlock(err, body, res);
+      });
+    });
+  }.bind(this))(options, callback);
 };
 
 //
