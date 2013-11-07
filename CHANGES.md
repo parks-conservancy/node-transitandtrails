@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.1.3 11/7/13
+
+* Reverted request caching--no real benefit
+
 ## v0.1.2 11/6/13
 
 * `getTrailheadAsGeoJSON()` returns trailheads as GeoJSON `Feature`s
