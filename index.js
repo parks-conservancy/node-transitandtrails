@@ -4,7 +4,6 @@ var assert = require("assert"),
     util = require("util");
 
 var async = require("async"),
-    lockingCache = require("locking-cache"),
     request = require("crequest");
 
 var TNT_URL_PREFIX = process.env.TNT_URL_PREFIX || "https://api.transitandtrails.org";
@@ -21,48 +20,37 @@ TnT.prototype.toString = function() {
   return "[TransitAndTrails]";
 };
 
-var lockedGet = lockingCache({
-  max: 10 * 1024 * 1024, // 10 MB
-  length: function(n) {
-    return n.length;
-  }
-});
-
 TnT.prototype.get = function(options, callback) {
-  return lockedGet(function(options, lock) {
-    assert.ok(this.key, "An API key is required.");
+  assert.ok(this.key, "An API key is required.");
 
-    if (typeof options === "string") {
-      options = {
-        url: options
-      };
+  if (typeof options === "string") {
+    options = {
+      url: options
+    };
+  }
+
+  options.url = TNT_URL_PREFIX + options.url;
+
+  options.qs = options.qs || {};
+
+  // filter out undefined / null values
+  Object.keys(options.qs).forEach(function(x) {
+    if (options.qs[x] === undefined ||
+        options.qs[x] === null) {
+      delete options.qs[x];
+    }
+  });
+
+  options.qs.key = this.key;
+
+  return request.get(options, function(err, res, body) {
+    if (res.statusCode !== 200) {
+      return callback(body);
     }
 
-    options.url = TNT_URL_PREFIX + options.url;
-
-    options.qs = options.qs || {};
-
-    // filter out undefined / null values
-    Object.keys(options.qs).forEach(function(x) {
-      if (options.qs[x] === undefined ||
-          options.qs[x] === null) {
-        delete options.qs[x];
-      }
-    });
-
-    options.qs.key = this.key;
-
-    return lock(options, function(unlock) {
-      return request.get(options, function(err, res, body) {
-        if (res.statusCode !== 200) {
-          return unlock(new Error(body));
-        }
-
-        // reverse the order of body and res since clients shouldn't care about res
-        return unlock(err, body, res);
-      });
-    });
-  }.bind(this))(options, callback);
+    // reverse the order of body and res since clients shouldn't care about res
+    return callback(err, body, res);
+  });
 };
 
 //

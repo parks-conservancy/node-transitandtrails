@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "crequest": "~0.1.1",
-    "async": "~0.2.9",
-    "locking-cache": "~0.1.2"
+    "async": "~0.2.9"
   }
 }
