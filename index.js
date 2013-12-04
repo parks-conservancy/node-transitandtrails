@@ -200,9 +200,20 @@ TnT.prototype.getTrip = function(id, callback) {
 TnT.prototype.getTripAsGeoJSON = function(id, callback) {
   var self = this;
 
+  var getAuthor = async.memoize(this.getUser.bind(this));
+
   return async.parallel({
     trip: function(done) {
-      return self.getTrip(id, done);
+      return self.getTrip(id, function(err, trip) {
+        if (err) {
+          return done(err);
+        }
+
+        return getAuthor(trip.author_id, function(err, user) {
+          trip.author = user;
+          return done(err, trip);
+        });
+      });
     },
     route: function(done) {
       return self.getTripRoute(id, done);
@@ -215,7 +226,7 @@ TnT.prototype.getTripAsGeoJSON = function(id, callback) {
       return callback(err);
     }
 
-    var trip = data.trip[0],
+    var trip = data.trip,
         route = data.route[0],
         attributes = data.attributes[0];
 
