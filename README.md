@@ -35,6 +35,6 @@ tnt.getTrailhead(292, function(err, trailhead) {
 
 ## License
 
-Copyright (c) 2013 Seth Fitzsimmons
+Copyright (c) 2013 Golden Gate National Parks Conservancy
 
 Published under the MIT license.
